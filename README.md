@@ -44,6 +44,28 @@ Cada sessão HTTP tem sua própria partida, guardada em memória. O `Game`
 (`src/main/java/com/alixandremz/pacman/game/Game.java`) move tudo em passos de grade a 10 Hz.
 O front-end interpola as posições entre os pacotes para o movimento ficar suave.
 
+## O que aprendi com este projeto
+
+- **Game loop no servidor**: o Java roda o estado a 10 Hz com `@Scheduled`; o navegador só desenha o
+  que recebe. Aprendi na prática a diferença entre estado autoritativo e renderização.
+- **SSE sem WebSocket**: usei `SseEmitter` para o servidor empurrar o estado e `POST` para os
+  comandos. Deu menos dependência que WebSocket e foi suficiente para um jogo de ritmo fixo —
+  também entendi quando SSE não bastaria (comunicação bidirecional de baixa latência).
+- **Separar regra de jogo de transporte**: `Game` é Java puro, sem Spring, e por isso dá para testar
+  sem subir servidor. O controller cuida de sessão, JSON e SSE.
+- **Sessão HTTP como identidade**: cada `JSESSIONID` ganhou uma partida própria em memória, sem login
+  nem banco de dados.
+- **Interpolação no cliente**: 10 pacotes por segundo parece travado; interpolar as posições a 60 fps
+  com `requestAnimationFrame` suavizou o movimento sem aumentar a taxa do servidor.
+- **IA por alvo**: cada fantasma persegue algo diferente (posição atual, 4 células à frente, vetor
+  com o Blinky, canto). Foi a parte que mais exigiu pensar em casos de borda.
+- **Testar lógica de jogo**: BFS para provar que toda pastilha é alcançável e simulação de 600 ticks
+  para garantir que ninguém atravessa parede — testes que pegam erro que olhar a tela não pega.
+- **Spring Boot 4 + Java 21**: os nomes dos starters mudaram (`spring-boot-starter-webmvc`) e o
+  `mvnw` evita depender de Maven instalado na máquina.
+- **Trade-offs conscientes**: JSON montado à mão e estado em memória mantêm o projeto pequeno; sei o
+  que trocaria se precisasse de ranking persistente ou de várias instâncias.
+
 ## Estrutura
 
 ```text
